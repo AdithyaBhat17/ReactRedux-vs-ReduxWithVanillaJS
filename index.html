@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Redux TODO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+    
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <div class="thumbnail">
+                    <h3 class="todo-h3">TODO</h3>
+                    <input type="text" id="todo" placeholder="Add a task">
+                    <button id="todoBtn"><i class="fas fa-plus"></i></button>
+                    <ul id="todos"></ul>
+                </div>                
+            </div>
+            <div class="col-md-6 col-sm-12">
+                <div class="thumbnail">
+                    <h3 class="todo-h3">GOALS</h3>
+                    <input type="text" id="goal" placeholder="Add a goal">
+                    <button id="goalBtn"><i class="fas fa-plus"></i></button>
+                    <ul id="goals"></ul>
+                </div>                
+            </div>
+        </div>
+    </div>
+
+    <div id="App">
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
+    <script src="https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <script src="index.js"></script>
+
+    <script type="text/babel">
+        function List(props){
+            return(
+                <ul>
+                    {props.items.map((item) => 
+                        <li key={item.id}>
+                            <span 
+                            onClick={() => props.toggle && props.toggle(item.id)}
+                            style={{textDecoration: item.complete ? 'line-through' : 'none'}}>
+                                {item.name}
+                            </span>
+                            <button onClick={() => props.remove(item)}>
+                                X 
+                            </button>
+                        </li>    
+                    )}
+                </ul>
+            )
+        }
+
+        class Todos extends React.Component{
+            addItem = (e) => {
+                e.preventDefault()
+                const name = this.input.value
+                this.input.value = ''
+                this.props.store.dispatch(addTodoAction({
+                    name,
+                    complete:false,
+                    id: generateId()
+                }))
+            }
+
+            removeItem = (todo) => {
+                this.props.store.dispatch(removeTodoAction(todo.id))
+            }
+
+            toggleItem = (id) => {
+                this.props.store.dispatch(toggleTodoAction(id))
+            }
+
+            render(){
+                return(
+                    <div className="col-md-6 col-sm-12">                        
+                        <div className="thumbnail">
+                            <h3 className="todo-h3">TODO with react</h3>
+                            <input 
+                            type="text"
+                            placeholder="Add a task"
+                            ref={(input) => this.input = input} />
+                            <button onClick={this.addItem}><i className="fas fa-plus"></i></button>
+                            <List 
+                            toggle={this.toggleItem}
+                            items={this.props.todos}
+                            remove={this.removeItem}/>
+                        </div>
+                    </div>
+                )
+            }
+        }
+
+        class Goals extends React.Component{
+            addGoal = (e) => {
+                e.preventDefault()
+                const name = this.input.value
+                this.input.value = ''
+
+                this.props.store.dispatch(addGoalAction({
+                    id: generateId(),
+                    name        
+                }))
+            }
+            removeItem = (goal) => {
+                this.props.store.dispatch(removeGoalAction(goal.id))
+            }
+            render(){
+                return(
+                    <div className="col-md-6 col-sm-12">  
+                        <div className="thumbnail">                      
+                            <h3 className="todo-h3">GOALS with react</h3>
+                            <input 
+                            type="text"
+                            placeholder="Add a Goal"
+                            ref={(input) => this.input = input} />
+                            <button onClick={this.addGoal}><i className="fas fa-plus"></i></button>
+                            <List 
+                            items={this.props.goals}
+                            remove={this.removeItem}/>
+                        </div>
+                    </div>
+                )
+            }
+        }
+
+        class App extends React.Component{
+            componentDidMount(){
+                const {store} = this.props
+                store.subscribe(() => this.forceUpdate())
+            }
+            render(){
+                const {store} = this.props
+                const {todos , goals} = store.getState()
+                return(
+                    <div className="container">
+                        <div className="row">
+                            <Todos todos = {todos} store = {store}/>
+                            <Goals goals = {goals} store = {store}/>
+                        </div>
+                    </div>
+                )
+            }
+        }
+
+        ReactDOM.render(
+            <App store={store}/>,
+            document.getElementById('App')
+        )
+    </script>
+    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script> -->
+</body>
+</html>
